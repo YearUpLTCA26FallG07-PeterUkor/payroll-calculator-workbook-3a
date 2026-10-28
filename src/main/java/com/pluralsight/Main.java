@@ -15,6 +15,17 @@ public class Main {
         System.out.printf("Enter the name of the payroll file to create: ");
         String outputFileName = input.nextLine();
 
+        boolean isjson = false;
+        boolean jsonFirstElement = true;
+        // get the last chars
+        if (outputFileName.length() > 5){
+            String outputFileExt = outputFileName.substring(outputFileName.length() - 5);
+            if (outputFileExt.endsWith(".json")){
+                isjson = true;
+            }
+        }
+
+
 
 
         try{
@@ -27,7 +38,12 @@ public class Main {
 
             FileWriter fileWriter = new FileWriter(outputFileName);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-            bufferedWriter.write("id|name|gross pay\n");
+            if (isjson){
+                bufferedWriter.write("[\n");
+            } else{
+                bufferedWriter.write("id|name|gross pay\n");
+            }
+
 
             // read lines form input file
             String inputLine;
@@ -65,16 +81,32 @@ public class Main {
                 Employee employee = new Employee(employeeId, name, hoursWorked, payRate);
 
                 // build string for writing
-
                 StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append(employee.getEmployeeId()).append("|");
-                stringBuilder.append(employee.getName()).append("|");
-                stringBuilder.append(employee.getGrossPay()).append("\n");
+
+                if (isjson){
+                    if (jsonFirstElement){
+                        jsonFirstElement = false;
+                    } else {
+                        bufferedWriter.write(",\n");
+                    }
+                    stringBuilder.append("\t{ \"id\":").append(employee.getEmployeeId()).append(",");
+                    stringBuilder.append(" \"name\": \"").append(employee.getName()).append("\"").append(",");
+                    stringBuilder.append(" \"grossPay\":").append(employee.getGrossPay()).append(" }");
+
+                } else {
+                    stringBuilder.append(employee.getEmployeeId()).append("|");
+                    stringBuilder.append(employee.getName()).append("|");
+                    stringBuilder.append(employee.getGrossPay()).append("\n");
+                }
 
                 String outputLine = stringBuilder.toString();
                 bufferedWriter.write(outputLine);
 
 
+            }
+
+            if (isjson){
+                bufferedWriter.write("\n]");
             }
 
             bufferedReader.close();
